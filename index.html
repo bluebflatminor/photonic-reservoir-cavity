@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cavity Geometry as Photonic Reservoir Substrate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --ink:       #1a1814;
+  --paper:     #f4f0e8;
+  --warm:      #e8e0cc;
+  --rule:      #c8bfa8;
+  --accent:    #8b3a2a;
+  --accent2:   #2a5c8b;
+  --dim:       #6b6155;
+  --light-dim: #9a9080;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: #f4f0e8;
+  color: #1a1814;
+  font-family: 'Courier Prime', monospace;
+  min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0;
+}
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+  position: relative;
+  z-index: 1;
+  background: #f4f0e8;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  left: 4.2rem; top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(139,58,42,0.18);
+}
+
+/* ── Header ── */
+.doc-header {
+  border-top: 2px solid #1a1814;
+  border-bottom: 1px solid var(--rule);
+  padding: 1.2rem 0 1rem;
+  margin-bottom: 1.8rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.doc-class {
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1a1814;
+  max-width: 520px;
+}
+
+h1 em { font-style: italic; color: var(--accent2); }
+
+.doc-meta {
+  text-align: right;
+  font-size: 0.58rem;
+  color: var(--dim);
+  line-height: 2;
+  letter-spacing: 0.06em;
+}
+.doc-meta .field { display: block; }
+
+/* ── Sections ── */
+.section { margin-bottom: 1.4rem; }
+
+.section-label {
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.18rem;
+  margin-bottom: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+}
+.section-label .num { color: var(--light-dim); font-style: italic; }
+
+p {
+  font-size: 0.82rem;
+  line-height: 1.85;
+  color: #1a1814;
+  margin-bottom: 0.6rem;
+}
+p:last-child { margin-bottom: 0; }
+
+.pull {
+  border-left: 3px solid var(--accent2);
+  margin: 1.2rem 0;
+  padding: 0.7rem 1rem 0.7rem 1.2rem;
+  background: rgba(42,92,139,0.04);
+}
+.pull p {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--accent2);
+  margin: 0;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.8rem;
+}
+
+/* ── Diagram ── */
+.diagram-wrap {
+  margin: 1.2rem 0;
+  border: 1px solid var(--rule);
+  background: #f4f0e8;
+  padding: 0.8rem 0.8rem 0.5rem;
+}
+.diagram-wrap canvas { display: block; width: 100%; height: auto; }
+.diagram-caption {
+  font-size: 0.56rem;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── Hypotheses ── */
+.hyp-list { list-style: none; margin: 0.4rem 0; }
+.hyp-list li {
+  font-size: 0.79rem;
+  line-height: 1.75;
+  padding: 0.35rem 0 0.35rem 1.4rem;
+  border-bottom: 1px solid var(--warm);
+  position: relative;
+  color: #1a1814;
+}
+.hyp-list li::before {
+  content: attr(data-n);
+  position: absolute; left: 0;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+.hyp-list li:last-child { border-bottom: none; }
+
+/* ── Footer ── */
+.doc-footer {
+  margin-top: 2rem;
+  border-top: 2px solid #1a1814;
+  padding-top: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.footer-note { font-size: 0.56rem; color: var(--dim); letter-spacing: 0.1em; font-style: italic; }
+.footer-id   { font-size: 0.56rem; color: var(--light-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+
+strong { color: #1a1814; font-weight: 700; }
+em.term { font-style: normal; color: var(--accent2); font-weight: 700; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section { animation: fadeUp 0.5s ease both; }
+.section:nth-of-type(1) { animation-delay: 0.05s; }
+.section:nth-of-type(2) { animation-delay: 0.11s; }
+.section:nth-of-type(3) { animation-delay: 0.17s; }
+.section:nth-of-type(4) { animation-delay: 0.23s; }
+.section:nth-of-type(5) { animation-delay: 0.29s; }
+.section:nth-of-type(6) { animation-delay: 0.35s; }
+.section:nth-of-type(n+7) { animation-delay: 0.40s; }
+
+@media (max-width: 580px) {
+  .two-col { grid-template-columns: 1fr; gap: 0; }
+  .page::before { display: none; }
+  .doc-header { grid-template-columns: 1fr; }
+  .doc-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="doc-header">
+    <div>
+      <div class="doc-class">Research Proposal · Photonic Reservoir Computing</div>
+      <h1>Cavity Geometry as Computational Substrate:<br>
+      <em>Toward Shape-Encoded Photonic Reservoirs</em></h1>
+    </div>
+    <div class="doc-meta">
+      <span class="field">Status: Public Domain</span>
+      <span class="field">Use: Open · No Permission Needed</span>
+      <span class="field">Domains: Photonics · RC Theory</span>
+      <span class="field">License: CC0</span>
+    </div>
+  </header>
+
+  <div class="section">
+    <div class="section-label">Motivation <span class="num">§ 1</span></div>
+    <p>
+      Reservoir computing (RC) is a recurrent neural network framework in which a fixed,
+      high-dimensional dynamical system — the <strong>reservoir</strong> — transforms
+      low-dimensional inputs into rich feature spaces that a simple linear readout can exploit.
+      In physical RC, the reservoir is a material or optical system whose natural dynamics
+      perform the computation. The central open question is: <strong>what physical
+      properties of a reservoir determine its computational power?</strong>
+    </p>
+    <p>
+      Most photonic RC implementations to date use delay-line architectures — a single
+      nonlinear node feeding back through a fiber loop with time-multiplexed virtual nodes.
+      These systems are effective but geometrically trivial: the reservoir is a
+      one-dimensional temporal sequence, not a true high-dimensional spatial network.
+      Computational richness is borrowed from time, not from structure.
+    </p>
+    <div class="pull">
+      <p>We propose that three-dimensional cavity geometry is itself a computational resource —
+      that the shape of an optical enclosure encodes, via wave chaos and modal interference,
+      a reservoir whose dimensionality is set by physics rather than by wiring.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Core Hypothesis <span class="num">§ 2</span></div>
+    <div class="two-col">
+      <div>
+        <p>
+          A <em class="term">plano-hemispherical optical cavity</em> — flat mirror base,
+          curved high-index hemisphere — operating in a wave-chaotic regime supports
+          simultaneously excited spatial modes whose interference patterns are dense,
+          non-repeating, and sensitively dependent on input frequency and angle.
+          This constitutes a natural reservoir state space.
+        </p>
+        <p>
+          The <em class="term">Berry-Robnik mixed phase space</em> produced by deliberate
+          dielectric scatterers within the cavity breaks integrable symmetry, suppresses
+          mode clustering, and maximises the effective rank of the reservoir state
+          matrix — the quantity that directly predicts computational capacity.
+        </p>
+      </div>
+      <div>
+        <p>
+          Readout is achieved via a conformal <em class="term">photonic skin layer</em>:
+          monolayer graphene patterned as a detector array on the outer surface of the
+          hemisphere, coupled to the intracavity field through evanescent leakage.
+          Each detector samples a spatially distinct superposition of cavity modes,
+          producing the column vector <strong>I<sub>j</sub>(ω<sub>k</sub>)</strong>
+          that populates the reservoir state matrix <strong>M<sub>total</sub></strong>.
+        </p>
+        <p>
+          Graphene is chosen for its sub-nanometre thickness — minimising back-action
+          on cavity modes — its broadband photoresponse at 1550 nm, gate-tunable complex
+          refractive index (Xu et al., APL 2015), and demonstrated evanescent coupling
+          responsivity. A single optimised waveguide-integrated detector has reached
+          230 V/W at zero bias (Scientific Reports, 2025); whether comparable
+          per-channel performance survives in a dense conformal array is unresolved —
+          see § 2.1.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Primary Risk · Array Readout SNR <span class="num">§ 2.1</span></div>
+    <p>
+      The dominant open risk is not the cavity physics but the readout. Monolayer
+      graphene absorbs only ~2.3% of normally incident 1550 nm light; per-patch
+      photocurrent is therefore intrinsically small, and recovering a clean signal
+      vector from 20+ patches simultaneously must contend with thermal noise and
+      inter-channel crosstalk. The single-detector responsivity figures reported in
+      the literature do not transfer directly to a correlated array and should not be
+      cited as if they did.
+    </p>
+    <p>
+      Worse, the two obvious mitigations are in tension. Increasing per-patch
+      absorption — longer interaction length, cavity-field enhancement — tends to
+      increase the <strong>spatial correlation</strong> between neighbouring patches,
+      because adjacent detectors then sample overlapping evanescent fields. Strongly
+      correlated channels are not linearly independent, and <strong>r<sub>eff</sub>
+      collapses</strong> even when every individual detector performs well. Raising
+      raw signal and preserving rank therefore pull in opposite directions.
+    </p>
+    <p>
+      This is a tractable optimisation, not a wall, and it is resolvable in simulation
+      before any fabrication. The achievable readout is the product of per-patch SNR
+      and the number of mutually independent patches; the design problem is to maximise
+      mutual information per channel subject to a correlation penalty, which fixes the
+      optimal detector spacing and coverage fraction (sparse, optimised placement is
+      expected to outperform dense tiling). If the modelled product cannot clear the
+      r<sub>eff</sub>&nbsp;&gt;&nbsp;50 threshold under realistic noise, the architecture
+      does not beat delay-line RC baselines and should be abandoned — this is the
+      controlling kill condition of § 4, H4.
+    </p>
+    <p>
+      One ordering caveat, surfaced by a toy numerical check of this section's logic:
+      readout correlation is not the first bottleneck. The achievable r<sub>eff</sub>
+      is bounded <em>first</em> by the intrinsic spectral rank of the cavity field —
+      how evenly mode energy is distributed across the resonances within the line-width —
+      and only <em>then</em> by how the skin samples it. If the wave-chaotic field is
+      dominated by a few high-Q modes, r<sub>eff</sub> is capped at the source and no
+      readout scheme can recover it. Spectral flatness is governed by cavity geometry and
+      Q-factor, i.e. it <em>is</em> the H1 "shape → capacity" question. H1 and § 2.1 are
+      therefore coupled and must be evaluated together, with H1 first: confirm the field is
+      high-rank before optimising the patches that read it.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Preliminary Check · Toy Model <span class="num">§ 2.2</span></div>
+    <p>
+      The logic of § 2.1 was tested with a deliberately minimal numerical model
+      (a one-dimensional rim-sampling caricature: a random superposition of spatial
+      modes read by patches whose angular acceptance window widens with absorption).
+      It is <strong>not</strong> a physical simulation and yields no real r<sub>eff</sub>
+      value; it exists only to check whether the stated tension is internally coherent
+      and to reveal which variable dominates.
+    </p>
+    <p>
+      Two results. First, the tension is <strong>robust</strong>: across every spectral
+      assumption tested, widening the patch window raised signal (mean SNR) while lowering
+      effective rank — exactly the trade § 2.1 describes. Second, and more usefully, the
+      <strong>dominant variable is the field's own spectral flatness, not the patch
+      geometry</strong>. When mode energy was concentrated in a few modes, effective rank
+      collapsed to ≈ 2–3 regardless of how the patches were arranged; when energy was
+      spread evenly, patches recovered ≈ 90% of the channel ceiling. This confirms the
+      ordering claim above: the H1 shape→capacity question is upstream of the § 2.1
+      readout question and must be settled first.
+    </p>
+    <p>
+      The model also surfaced a hidden-assumption error in its own first draft (an
+      arbitrary spectral roll-off that pre-determined the rank), which is documented in
+      the script rather than quietly fixed — a small illustration of why even toy checks
+      earn their place. The code is released CC0 as a companion file; it requires only
+      <em>numpy</em> and runs in minutes.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Schematic <span class="num">§ 3</span></div>
+    <div class="diagram-wrap">
+      <canvas id="schematic"></canvas>
+      <div class="diagram-caption">
+        Fig. 1 — Cross-section: off-axis laser injection (base port) → volumetric wave-chaotic
+        field with deliberate scatterers → evanescent leakage through hemisphere wall →
+        conformal graphene skin detector array → M<sub>total</sub> readout matrix.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Open Research Questions <span class="num">§ 4</span></div>
+    <ul class="hyp-list">
+      <li data-n="H1">
+        <strong>Shape → capacity mapping.</strong> How does cavity geometry (aspect ratio,
+        scatterer number and placement, hemisphere radius) quantitatively determine
+        effective reservoir rank r<sub>eff</sub>? Is there an analytic bound analogous
+        to the Weyl law for eigenmode density?
+      </li>
+      <li data-n="H2">
+        <strong>Graphene skin optimisation.</strong> What detector spacing, coverage fraction,
+        and gate-voltage profile maximises the mutual information between skin output
+        and intracavity mode superposition? Does partial coverage outperform full tiling?
+      </li>
+      <li data-n="H3">
+        <strong>Frequency comb multiplexing.</strong> A frequency comb input (N<sub>f</sub>
+        teeth, ~0.5–1 GHz spacing) simultaneously probes N<sub>f</sub> reservoir states per
+        round trip. What is the information-theoretic limit of this spectral multiplexing,
+        and how does it interact with cavity round-trip time?
+      </li>
+      <li data-n="H4">
+        <strong>Fabrication kill conditions.</strong> What are the explicit falsification
+        thresholds — minimum r<sub>eff</sub>, rim bond integrity, graphene mobility floor —
+        below which the architecture does not outperform delay-line RC baselines?
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Status &amp; Use <span class="num">§ 5</span></div>
+    <p>
+      This is released to the commons under CC0. It is a seed, not a project: the
+      architecture, the open questions, and the kill conditions are placed in the public
+      domain so that anyone who finds them useful can build on them freely. No permission,
+      attribution, coordination, or contact is required. There is nothing to join and
+      no one to ask.
+    </p>
+    <p>
+      The most useful next step requires no laboratory: an FDTD model (MEEP or equivalent)
+      of the geometry that computes the inter-patch correlation matrix and estimates
+      achievable r<sub>eff</sub> against the § 2.1 risk — establishing, in simulation,
+      whether the readout can clear the r<sub>eff</sub>&nbsp;&gt;&nbsp;50 threshold before
+      any fabrication is attempted. That FDTD model does not yet exist and is the clearest
+      open invitation here. The companion file that <em>does</em> exist is the § 2.2 toy
+      check — a logic test, not a physical simulation. Take either, fork it, publish it,
+      ignore the source — all are equally welcome. The only aim here is to move the
+      question forward.
+    </p>
+  </div>
+
+  <footer class="doc-footer">
+    <span class="footer-note">
+      Independent research · Solbakken Research Initiative · Omaha, NE ·
+      Correspondence via GitHub: bluebflatminor
+    </span>
+    <span class="footer-id">SRI-RC-01 · 2026 · CC0</span>
+  </footer>
+
+</div>
+
+<script>
+const canvas = document.getElementById('schematic');
+const ctx    = canvas.getContext('2d');
+
+// Fixed scatterer seed so positions are deterministic
+const SCAT = [
+  [0.18, 0.38], [-0.34, 0.44], [0.08, 0.66],
+  [-0.48, 0.22], [0.38, 0.58], [-0.12, 0.28],
+];
+
+function draw() {
+  const W  = canvas.parentElement.clientWidth - 16; // account for padding
+  const H  = Math.round(W * 0.66);                  // taller: room for top+bottom labels
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const fs    = Math.max(8, W * 0.0155);
+  // Reserve vertical bands for labels so nothing clips
+  const TOP_BAND    = fs * 3.2;     // two stacked top labels
+  const BOTTOM_BAND = fs * 5.0;     // mirror label + two-line laser label + beam
+  const RIGHT_BAND  = W * 0.16;     // M_total arrow + label
+  const LEFT_BAND   = W * 0.04;
+
+  const usableW = W - RIGHT_BAND - LEFT_BAND;
+  const usableH = H - TOP_BAND - BOTTOM_BAND;
+
+  const baseY = H - BOTTOM_BAND;
+  const R     = Math.min(usableW * 0.42, usableH * 0.92);
+  const CX    = LEFT_BAND + usableW * 0.5;
+  const skinR = R * 1.10;
+
+  // ── Paper background ──────────────────────────────
+  ctx.fillStyle = '#f4f0e8';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Interior cavity fill (hemisphere only — above baseY) ──
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(CX, baseY, R, Math.PI, 0);
+  ctx.lineTo(CX + R, baseY);
+  ctx.lineTo(CX - R, baseY);
+  ctx.closePath();
+  ctx.clip();
+  const grd = ctx.createRadialGradient(CX, baseY - R*0.35, R*0.05, CX, baseY, R);
+  grd.addColorStop(0, 'rgba(42,92,139,0.10)');
+  grd.addColorStop(1, 'rgba(42,92,139,0.01)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  // ── Bouncing ray paths (wave chaos) ──────────────
+  // Drawn inside clip so they stay within the hemisphere
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(CX, baseY, R - 1, Math.PI, 0);
+  ctx.lineTo(CX + R, baseY);
+  ctx.lineTo(CX - R, baseY);
+  ctx.closePath();
+  ctx.clip();
+
+  const portX = CX - R * 0.15;
+  const rays = [
+    { a: -Math.PI*0.52, col: '42,92,139',  w: 0.9 },
+    { a: -Math.PI*0.72, col: '80,130,200', w: 0.7 },
+    { a: -Math.PI*0.35, col: '42,92,139',  w: 0.9 },
+    { a: -Math.PI*0.88, col: '100,150,210',w: 0.6 },
+    { a: -Math.PI*0.18, col: '60,110,180', w: 0.7 },
+  ];
+
+  for (const ray of rays) {
+    // Simulate 2 bounces for each ray to suggest chaotic paths
+    let x = portX, y = baseY - 2;
+    let vx = Math.cos(ray.a), vy = Math.sin(ray.a);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+
+    for (let bounce = 0; bounce < 3; bounce++) {
+      // March to hemisphere wall or base
+      let tMin = Infinity;
+      // Intersect hemisphere
+      const dx = x - CX, dy = y - baseY;
+      const A = vx*vx + vy*vy;
+      const B = 2*(dx*vx + dy*vy);
+      const C = dx*dx + dy*dy - R*R;
+      const disc = B*B - 4*A*C;
+      if (disc >= 0) {
+        const t1 = (-B - Math.sqrt(disc)) / (2*A);
+        const t2 = (-B + Math.sqrt(disc)) / (2*A);
+        const t  = t1 > 0.5 ? t1 : (t2 > 0.5 ? t2 : Infinity);
+        if (t < tMin) tMin = t;
+      }
+      // Intersect base
+      if (vy > 0.01) {
+        const tb = (baseY - y) / vy;
+        if (tb > 0.5 && tb < tMin) tMin = tb;
+      }
+      if (!isFinite(tMin)) break;
+
+      const nx = x + vx * tMin;
+      const ny = y + vy * tMin;
+      ctx.lineTo(nx, ny);
+
+      // Reflect off hemisphere (normal = radial) or base (normal = up)
+      if (ny >= baseY - 1) {
+        vy = -Math.abs(vy);
+      } else {
+        const nx_ = (nx - CX) / R;
+        const ny_ = (ny - baseY) / R;
+        const dot = vx*nx_ + vy*ny_;
+        vx = vx - 2*dot*nx_;
+        vy = vy - 2*dot*ny_;
+        // Add slight perturbation to suggest chaos
+        const perturb = (Math.random() - 0.5) * 0.08;
+        vx += perturb; vy += perturb;
+        const mag = Math.sqrt(vx*vx + vy*vy);
+        vx /= mag; vy /= mag;
+      }
+      x = nx; y = ny;
+    }
+
+    ctx.strokeStyle = `rgba(${ray.col},0.35)`;
+    ctx.lineWidth = ray.w;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Scatterers ────────────────────────────────────
+  for (const [sx, sy] of SCAT) {
+    const px = CX + sx * R;
+    const py = baseY - sy * R;
+    // Only draw if inside hemisphere
+    const dd = Math.sqrt((px-CX)**2 + (py-baseY)**2);
+    if (dd < R - 4 && py < baseY - 4) {
+      ctx.beginPath();
+      ctx.arc(px, py, R*0.030, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(139,58,42,0.55)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(139,58,42,0.3)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+  }
+
+  // ── Evanescent coupling tick marks ───────────────
+  // Short radial lines from hemisphere wall outward suggesting leakage
+  const N_TICKS = 22;
+  for (let i = 1; i < N_TICKS; i++) {
+    const a   = Math.PI * i / N_TICKS;
+    const cos = Math.cos(Math.PI - a);
+    const sin = Math.sin(a);
+    const x1  = CX + R       * cos;
+    const y1  = baseY - R    * sin;
+    const x2  = CX + skinR   * cos * 0.985;
+    const y2  = baseY - skinR* sin * 0.985;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'rgba(60,130,70,0.20)';
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+
+  // ── Graphene skin arc (curved surface only, not base) ──
+  ctx.beginPath();
+  ctx.arc(CX, baseY, skinR, Math.PI, 0);
+  ctx.strokeStyle = 'rgba(60,130,70,0.65)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([3, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Skin detector dots — hemisphere arc only
+  const N_DET = 20;
+  for (let i = 1; i < N_DET; i++) {
+    const a   = Math.PI * i / N_DET;
+    const px  = CX + skinR * Math.cos(Math.PI - a);
+    const py  = baseY - skinR * Math.sin(a);
+    ctx.beginPath();
+    ctx.arc(px, py, 2.4, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(60,140,80,0.75)';
+    ctx.fill();
+  }
+
+  // ── Hemisphere arc (wall) ─────────────────────────
+  ctx.beginPath();
+  ctx.arc(CX, baseY, R, Math.PI, 0);
+  ctx.strokeStyle = 'rgba(26,24,20,0.75)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  // ── Base mirror ───────────────────────────────────
+  const mirrorGrad = ctx.createLinearGradient(CX-R, baseY, CX+R, baseY);
+  mirrorGrad.addColorStop(0,   'rgba(139,100,30,0)');
+  mirrorGrad.addColorStop(0.2, 'rgba(200,160,50,0.9)');
+  mirrorGrad.addColorStop(0.8, 'rgba(200,160,50,0.9)');
+  mirrorGrad.addColorStop(1,   'rgba(139,100,30,0)');
+  ctx.beginPath();
+  ctx.moveTo(CX - R, baseY);
+  ctx.lineTo(CX + R, baseY);
+  ctx.strokeStyle = mirrorGrad;
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+
+  // ── Laser port + beam (kept within bottom band) ──
+  // Short angled beam stub below the port; stays inside BOTTOM_BAND
+  const beamLen = BOTTOM_BAND * 0.42;
+  const bx0 = portX - beamLen * 0.45;
+  const by0 = baseY + beamLen;
+  ctx.beginPath();
+  ctx.moveTo(bx0, by0);
+  ctx.lineTo(portX, baseY - 1);
+  ctx.strokeStyle = 'rgba(180,50,30,0.55)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+  // Port dot
+  ctx.beginPath();
+  ctx.arc(portX, baseY, R*0.022, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(180,50,30,0.80)';
+  ctx.fill();
+
+  // ── M_total readout arrow (inside reserved right band) ──
+  const arrowY  = baseY - skinR * 0.55;
+  const arrowX0 = CX + skinR + W * 0.012;
+  const arrowX1 = arrowX0 + RIGHT_BAND * 0.32;
+  ctx.beginPath();
+  ctx.moveTo(arrowX0, arrowY);
+  ctx.lineTo(arrowX1, arrowY);
+  ctx.strokeStyle = 'rgba(42,92,139,0.65)';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(arrowX1 - 5, arrowY - 4);
+  ctx.lineTo(arrowX1 + 1, arrowY);
+  ctx.lineTo(arrowX1 - 5, arrowY + 4);
+  ctx.strokeStyle = 'rgba(42,92,139,0.65)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  // ── Labels ────────────────────────────────────────
+  ctx.textBaseline = 'middle';
+
+  // TOP BAND: two stacked labels, skin on outer line, hemisphere on inner
+  // Skin label sits in the upper half of the top band
+  ctx.font = `${fs}px "Courier Prime", monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(60,130,70,0.85)';
+  ctx.fillText('graphene skin · evanescent readout', CX, TOP_BAND * 0.32);
+
+  // Hemisphere label sits just below it, still clear of the arc apex
+  ctx.fillStyle = 'rgba(26,24,20,0.5)';
+  ctx.fillText('high-index hemisphere', CX, TOP_BAND * 0.74);
+
+  // Scatterers — anchored to the actual lowest-left scatterer, leader-free
+  ctx.fillStyle = 'rgba(139,58,42,0.75)';
+  ctx.textAlign = 'right';
+  ctx.fillText('scatterers', CX - R*0.42, baseY - R*0.30);
+
+  // Mirror label — in bottom band, right of the beam to avoid overlap
+  ctx.fillStyle = 'rgba(160,120,30,0.8)';
+  ctx.textAlign = 'center';
+  ctx.fillText('flat mirror · R > 99.9%', CX + R*0.30, baseY + fs * 1.4);
+
+  // Laser label — left of beam, raised to stay inside bottom band
+  ctx.fillStyle = 'rgba(180,50,30,0.75)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Er laser /', bx0 - fs * 1.5, by0 - fs * 0.2);
+  ctx.fillText('freq. comb', bx0 - fs * 1.5, by0 + fs * 0.9);
+
+  // M_total label — guaranteed inside canvas (right band reserved)
+  ctx.fillStyle = 'rgba(42,92,139,0.75)';
+  ctx.textAlign = 'left';
+  ctx.fillText('M_total', arrowX1 + 4, arrowY);
+
+  // Wave-chaos annotation — upper-left interior, away from ray crossfire
+  ctx.fillStyle = 'rgba(42,92,139,0.4)';
+  ctx.textAlign = 'center';
+  ctx.font = `italic ${fs * 0.95}px "Playfair Display", serif`;
+  ctx.fillText('wave-chaotic field', CX - R*0.30, baseY - R*0.72);
+
+  ctx.textBaseline = 'alphabetic';
+}
+
+draw();
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>
